@@ -120,7 +120,7 @@ class Assistant:
         
         index = self.create_index()
         
-        llm = Anthropic(model="claude-3-5-sonnet-latest", temperature=0.5, max_tokens=1024, timeout=None, max_retries=2)
+        llm = Anthropic(model="claude-3-5-haiku-latest", temperature=0.5, max_tokens=1024, timeout=None, max_retries=2)
         memory = ChatMemoryBuffer.from_defaults(token_limit=40000)
 
         chat_engine = index.as_chat_engine(
