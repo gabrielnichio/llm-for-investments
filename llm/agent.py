@@ -4,6 +4,10 @@ from llama_index.core.agent.workflow import FunctionAgent
 
 import asyncio
 
+import logging
+
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 from query_pipeline import investment_analysis
 
 
@@ -12,6 +16,7 @@ memory = ChatMemoryBuffer.from_defaults(token_limit=40000)
 
 agent = FunctionAgent(
     tools=[investment_analysis],
+    memory=memory,
     llm=Anthropic(model="claude-3-5-haiku-latest", temperature=0.5, max_tokens=1024, timeout=None, max_retries=2),
     system_prompt="""
     Sua persona é um assistente pessoal de análise de investimentos. Seu trabalho é responder perguntas relacionadas a investimentos do usuário que podem incluir ações, ETFs, fundos de investimento, renda fixa e criptomoedas.
@@ -38,14 +43,15 @@ agent = FunctionAgent(
 
 async def main():
     while True:
-        user_input = input("Você: ")
+        print("\n\n\n")
+        user_input = input("Pergunta do usuário: ")
 
         if user_input.lower() == "sair":
             break
 
         response = await agent.run(user_input)
 
-        print(str(response))
+        print("\nResposta:\n", str(response))
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main(), debug=False)

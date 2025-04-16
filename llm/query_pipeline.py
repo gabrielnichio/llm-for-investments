@@ -10,6 +10,23 @@ from llama_index.llms.anthropic import Anthropic
 
 df = pd.read_csv("../data/applications.csv")
 
+def get_df_info(df: pd.DataFrame) -> str:
+    """
+    Get the information of the dataframe.
+    
+    Args:
+        df (pd.DataFrame): The dataframe to get the information from.
+        
+    Returns:
+        str: The information of the dataframe.
+    """
+    infos = ""
+
+    for column in df.columns:
+        infos += f"{column}: {df[column].dtype}\n"
+
+    return infos
+
 instruction_str = (
     "1. Convert the query to executable Python code using Pandas.\n"
     "2. The final line of code should be a Python expression that can be called with the `eval()` function.\n"
@@ -20,7 +37,11 @@ instruction_str = (
 
 pandas_prompt_str = (
     "You are working with a pandas dataframe in Python related to stock investments.\n"
-    "The column 'Data' is the date of the investment, 'Valor' is the amount invested, and 'Cota' is the name of the stock.\n"
+    "The dataframe contains the following columns:\n"
+    "{df_info}\n"
+    "'Cota' is the name of the stock, 'Valor' is the ammount of money that was applied in the stock, 'Data' is the date of the investment, 'Tipo' is the type of the record, 'Mes' is the month of the application and 'Ano' is the year of the application.\n"
+    "'Valor' is not the quantity of stocks, but the amount of money that was applied in the stock.\n"
+    "Each row represents a record of an investment made by the user. There can be more than one investment in a month.\n"
     "The name of the dataframe is `df`.\n"
     "This is the result of `print(df.head())`:\n"
     "{df_str}\n\n"
@@ -39,11 +60,11 @@ response_synthesis_prompt_str = (
 )
 
 pandas_prompt = PromptTemplate(pandas_prompt_str).partial_format(
-    instruction_str=instruction_str, df_str=df.head(5)
+    instruction_str=instruction_str, df_str=df.head(5), df_info=get_df_info(df)
 )
 pandas_output_parser = PandasInstructionParser(df)
 response_synthesis_prompt = PromptTemplate(response_synthesis_prompt_str)
-llm = Anthropic(model="claude-3-5-haiku-latest", temperature=0.5, max_tokens=1024, timeout=None, max_retries=2)
+llm = Anthropic(model="claude-3-5-haiku-latest", temperature=0, max_tokens=1024, timeout=None, max_retries=2)
 
 qp = QP(
     modules={
@@ -54,7 +75,7 @@ qp = QP(
         "response_synthesis_prompt": response_synthesis_prompt,
         "llm2": llm,
     },
-    verbose=True,
+    verbose=True
 )
 
 qp.add_chain(["input", "pandas_prompt", "llm1", "pandas_output_parser"])
@@ -86,7 +107,8 @@ def investment_analysis(question: str) -> str:
     """
 
     response = qp.run(
-        query_str = question
+        query_str = question,
+    
     )
     return response.message.content
 
