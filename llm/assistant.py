@@ -35,7 +35,12 @@ class Assistant:
         
     def load_data(self):
         csv_reader = PandasCSVReader(concat_rows=False)
-        file_extractor = {".csv": csv_reader}
+        pdf_parser = LlamaParse(
+            result_type="text"  
+        )
+        
+        # file_extractor = {".pdf": pdf_parser, ".csv": csv_reader}
+        file_extractor = {".pdf": pdf_parser}
         documents = SimpleDirectoryReader(input_dir="../data", file_extractor=file_extractor, recursive=True).load_data()
         print(f"Total of {len(documents)} documents loaded.")
         
@@ -128,7 +133,7 @@ class Assistant:
             llm=llm,
             chat_memory=memory,
             embed_model=self.embed_model_query,
-            similarity_top_k=40,
+            similarity_top_k=10,
             verbose=True,  
             system_prompt=("""
                 Sua persona é um assistente pessoal de análise de investimentos. Seu trabalho é responder perguntas relacionadas aos investimentos do usuário

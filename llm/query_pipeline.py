@@ -7,6 +7,7 @@ from llama_index.experimental.query_engine.pandas import ( PandasInstructionPars
 
 from llama_index.core import PromptTemplate
 from llama_index.llms.anthropic import Anthropic
+from llama_index.llms.gemini import Gemini
 
 df = pd.read_csv("../data/applications.csv")
 
@@ -41,6 +42,7 @@ pandas_prompt_str = (
     "{df_info}\n"
     "'Cota' is the name of the stock, 'Valor' is the ammount of money that was applied in the stock, 'Data' is the date of the investment, 'Tipo' is the type of the record, 'Mes' is the month of the application and 'Ano' is the year of the application.\n"
     "'Valor' is not the quantity of stocks, but the amount of money that was applied in the stock.\n"
+    "When the user seach for quantity of stocks, search for the value_count of the column 'Cota'.\n"
     "Each row represents a record of an investment made by the user. There can be more than one investment in a month.\n"
     "The name of the dataframe is `df`.\n"
     "This is the result of `print(df.head())`:\n"
@@ -64,8 +66,12 @@ pandas_prompt = PromptTemplate(pandas_prompt_str).partial_format(
 )
 pandas_output_parser = PandasInstructionParser(df)
 response_synthesis_prompt = PromptTemplate(response_synthesis_prompt_str)
-llm = Anthropic(model="claude-3-5-haiku-latest", temperature=0, max_tokens=1024, timeout=None, max_retries=2)
-
+# llm = Anthropic(model="claude-3-5-haiku-latest", temperature=0, max_tokens=1024, timeout=None, max_retries=2)
+llm = Gemini(
+    model="models/gemini-2.0-flash",
+    temperature=0,
+    max_tokens=1024
+)
 qp = QP(
     modules={
         "input": InputComponent(),

@@ -34,11 +34,11 @@ async def analisys(front_infos: Infos):
     query_embeddings = assistant.get_embedding().get_text_embedding(front_infos.question)
     chroma_collection = assistant.get_chroma_collection()
     
-    display_similar_documents(chroma_collection, query_embeddings)
+    # display_similar_documents(chroma_collection, query_embeddings)
 
     response = llm.chat(front_infos.question)
 
-    display_source_documents(response)
+    # display_source_documents(response)
 
     return {"response": response.response}
 
